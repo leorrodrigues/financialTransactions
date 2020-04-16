@@ -1,7 +1,7 @@
 /* eslint-disable no-shadow */
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-param-reassign */
-import { getRepository } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 
 import Transaction from '../models/Transaction';
 
@@ -11,11 +11,10 @@ interface Balance {
     total: number;
 }
 
-export default class GetBalanceService {
-    public async execute(): Promise<Balance> {
-        const transactionsRepository = getRepository(Transaction);
-
-        const transactions = await transactionsRepository.find();
+@EntityRepository(Transaction)
+class TransactionRepository extends Repository<Transaction> {
+    public async getBalance(): Promise<Balance> {
+        const transactions = await this.find();
 
         const { income, outcome } = transactions.reduce(
             ({ income, outcome }, transaction) => {
@@ -35,3 +34,5 @@ export default class GetBalanceService {
         return transacionWithBalance;
     }
 }
+
+export default TransactionRepository;
