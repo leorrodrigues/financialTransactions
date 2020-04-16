@@ -1,7 +1,7 @@
-import { getRepository } from 'typeorm';
+import { getCustomRepository } from 'typeorm';
 
+import TransactionRepository from '../repositories/TransactionRepository';
 import Transaction from '../models/Transaction';
-import GetBalanceService from './GetBalanceService';
 
 import AppError from '../errors/AppError';
 
@@ -17,14 +17,15 @@ export default class CreateTransactionService {
         value,
         type,
     }: Request): Promise<Transaction> {
-        const transactionsRepository = getRepository(Transaction);
+        const transactionsRepository = getCustomRepository(
+            TransactionRepository,
+        );
 
         if (type !== 'income' && type !== 'outcome') {
             throw new AppError('invalid transaction type');
         }
 
-        const getBalance = new GetBalanceService();
-        const { total } = await getBalance.execute();
+        const { total } = await transactionsRepository.getBalance();
 
         if (type === 'outcome' && total < value) {
             throw new AppError('Insuficients founds.');
