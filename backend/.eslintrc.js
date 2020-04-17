@@ -2,6 +2,7 @@ module.exports = {
   env: {
     es6: true,
     node: true,
+    jest: true,
   },
   extends: [
     'airbnb-base',
@@ -24,13 +25,18 @@ module.exports = {
   ],
   rules: {
       "prettier/prettier": "error",
+      "class-methods-use-this": "off",
       "import/extensions": [
           "error",
           "ignorePackages",
           {
               "ts": "never"
           }
-      ]
+      ],
+      "@typescript-eslint/camelcase": "off",
+      "@typescript-eslint/no-unused-vars": ["error", {
+          "argsIgnorePattern": "_"
+      }]
   },
   settings: {
       "import/resolver": {
