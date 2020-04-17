@@ -4,7 +4,11 @@ import {
     PrimaryGeneratedColumn,
     CreateDateColumn,
     UpdateDateColumn,
+    ManyToOne,
+    JoinColumn,
 } from 'typeorm';
+
+import Category from './Category';
 
 @Entity('transactions')
 class Transaction {
@@ -19,6 +23,12 @@ class Transaction {
 
     @Column()
     type: 'income' | 'outcome';
+
+    // @ManyToOne(type => Category, category => category)
+    @ManyToOne(() => Category)
+    @JoinColumn({ name: 'category_id' })
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    category: string;
 
     @CreateDateColumn()
     created_at: Date;
