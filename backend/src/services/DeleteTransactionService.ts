@@ -1,5 +1,6 @@
 import { getCustomRepository } from 'typeorm';
 
+import { isUuid } from 'uuidv4';
 import TransactionsRepository from '../repositories/TransactionRepository';
 
 import AppError from '../errors/AppError';
@@ -13,6 +14,10 @@ class DeleteTransactionService {
         const transactionsRepository = getCustomRepository(
             TransactionsRepository,
         );
+
+        if (!isUuid(id)) {
+            throw new AppError('Invalid transaction', 401);
+        }
 
         const transaction = await transactionsRepository.findOne(id);
 

@@ -105,6 +105,23 @@ describe('Transaction', () => {
         });
     });
 
+    it('should not be able to create a transaction with type different than income or outcome', async () => {
+        const response = await request(app).post('/transactions').send({
+            title: 'Bicycle',
+            type: 'iincome',
+            value: 3000,
+            category: 'test',
+        });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toMatchObject(
+            expect.objectContaining({
+                message: 'invalid transaction type',
+                status: 'error',
+            }),
+        );
+    });
+
     it('should not be able to create outcome transaction without a valid balance', async () => {
         const response = await request(app).post('/transactions').send({
             title: 'Bicycle',
@@ -285,6 +302,34 @@ describe('Transaction', () => {
         );
 
         expect(transaction).toBeFalsy();
+    });
+
+    it('should not be able to delete a transaction that does not exists', async () => {
+        const response = await request(app).delete(`/transactions/0`);
+
+        console.log(response.body);
+
+        expect(response.status).toBe(401);
+        expect(response.body).toMatchObject(
+            expect.objectContaining({
+                status: 'error',
+                message: 'Invalid transaction',
+            }),
+        );
+    });
+
+    it('should not be able to delete a transaction that does not has uuid4 as id', async () => {
+        const response = await request(app).delete(
+            `/transactions/7ba27ace-34ad-4b43-a6f1-1eed9811ab9b`,
+        );
+
+        expect(response.status).toBe(401);
+        expect(response.body).toMatchObject(
+            expect.objectContaining({
+                status: 'error',
+                message: 'Invalid transaction',
+            }),
+        );
     });
 
     it('should be able to import transactions', async () => {
