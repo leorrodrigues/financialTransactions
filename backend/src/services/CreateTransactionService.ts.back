@@ -1,6 +1,6 @@
 /* eslint-disable array-callback-return */
 /* eslint-disable no-param-reassign */
-import { getCustomRepository } from 'typeorm';
+import { getCustomRepository, getRepository } from 'typeorm';
 
 import TransactionRepository from '../repositories/TransactionRepository';
 import Transaction from '../models/Transaction';
@@ -8,6 +8,7 @@ import Transaction from '../models/Transaction';
 import CreateCategoryService from './CreateCategoryService';
 
 import AppError from '../errors/AppError';
+import Category from '../models/Category';
 
 export default class CreateTransactionService {
     public async execute(transactions: Transaction[]): Promise<Transaction[]> {
@@ -17,6 +18,7 @@ export default class CreateTransactionService {
         const transactionsRepository = getCustomRepository(
             TransactionRepository,
         );
+        const categoriesRepository = getRepository(Category);
         const createCategory = new CreateCategoryService();
 
         // Check if all transactions have the same type, if not, reject all the batch transactions
@@ -46,20 +48,22 @@ export default class CreateTransactionService {
                     t => t.category.title === thing.category.title,
                 ) === i,
         );
+        // .map(({ category }) => category.title)
+        // .filter((value, index, self) => self.indexOf(value) === index);
 
-        // Check if category exists, if not save it.
         await Promise.all(
             uniqueCategories.map(async ({ category }) => {
-                await createCategory.execute({
+                const categorySaved = await createCategory.execute({
                     title: (category as unknown) as string,
                 });
+                return categorySaved;
             }),
         );
 
         // Check if category exists, if not save it.
         const categories = await Promise.all(
             transactions.map(async transaction => {
-                const category = await createCategory.execute({
+                const category = await categoriesRepository.findOne({
                     title: (transaction.category as unknown) as string,
                 });
                 return category;

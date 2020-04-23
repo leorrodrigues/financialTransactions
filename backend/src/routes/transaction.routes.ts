@@ -16,17 +16,21 @@ const transactionRouter = Router();
 
 transactionRouter.get('/', async (request, response) => {
     const transactionsRepository = getCustomRepository(TransactionsRepository);
-    const transactions = await transactionsRepository
-        .createQueryBuilder('transaction')
-        .leftJoinAndSelect('transaction.category', 'categories')
-        .select([
-            'transaction.id as id',
-            'transaction.title as title',
-            'transaction.value as value',
-            'transaction.type as type',
-            'categories.title as category',
-        ])
-        .execute();
+    const transactions = await transactionsRepository.find({
+        relations: ['category'],
+    });
+    // Make the search selecting specific columns in table
+    // const transactions = await transactionsRepository
+    // .createQueryBuilder('transaction')
+    // .leftJoinAndSelect('transaction.category', 'categories')
+    // .select([
+    //     'transaction.id as id',
+    //     'transaction.title as title',
+    //     'transaction.value as value',
+    //     'transaction.type as type',
+    //     'categories.title as category',
+    // ])
+    // .execute();
 
     const balance = await transactionsRepository.getBalance();
 
@@ -43,16 +47,11 @@ transactionRouter.get('/:id', async (request, response) => {
 });
 
 transactionRouter.post('/', async (request, response) => {
-    const { title, value, type, category } = request.body;
+    const { transactions } = request.body;
 
     const createTransaction = new CreateTransactionService();
 
-    const transaction = await createTransaction.execute({
-        title,
-        value,
-        type,
-        category,
-    });
+    const transaction = await createTransaction.execute(transactions);
 
     return response.json(transaction);
 });
@@ -69,12 +68,12 @@ transactionRouter.delete('/:id', async (request, response) => {
 
 transactionRouter.post(
     '/import',
-    upload.single('file'),
+    upload.array('file'),
     async (request, response) => {
         const importTransactions = new ImportTransactionsService();
 
         const transactions = await importTransactions.execute({
-            file: request.file.filename,
+            files: request.files,
         });
 
         response.json(transactions);

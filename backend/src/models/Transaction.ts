@@ -25,10 +25,10 @@ class Transaction {
     type: 'income' | 'outcome';
 
     // @ManyToOne(type => Category, category => category)
-    @ManyToOne(() => Category)
+    @ManyToOne(() => Category, { eager: true })
     @JoinColumn({ name: 'category_id' })
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    category: string;
+    category: Category;
 
     @CreateDateColumn()
     created_at: Date;
